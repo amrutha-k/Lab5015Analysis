@@ -184,6 +184,7 @@ int main(int argc, char** argv)
   TH1F* hampR;
   TF1 *fLandau1;
   TF1 *fLandau2;
+  TF1 *f;
   float norm;
 
   
@@ -818,8 +819,8 @@ int main(int argc, char** argv)
         histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-1.5*fitFunc->GetParameter(2),fitFunc->GetParameter(1)+1.5*fitFunc->GetParameter(2));
         float fitXMin2 = CTRMeans[label12] - 5.*CTRSigmas[label12];
         float fitXMax2 = CTRMeans[label12] + 5.*CTRSigmas[label12];
-        TF1* fitFunc2 = new TF1(Form("fitFunc2_energyCorr_%s",label12.c_str()),"gaus(0)+gaus(3)+gaus(6)",fitXMin2,fitXMax2);
-        fitFunc2 -> SetParameter(0,fitFunc->GetParameter(0));
+        TF1* fitFunc2 = new TF1(Form("fitFunc2_energyCorr_%s",label12.c_str()),"gaus",fitXMin2,fitXMax2);
+        /*fitFunc2 -> SetParameter(0,fitFunc->GetParameter(0));
         fitFunc2 -> SetParameter(1,fitFunc->GetParameter(1));
         fitFunc2 -> SetParameter(2,fitFunc->GetParameter(2));
         fitFunc2 -> SetParameter(3,fitFunc->GetParameter(0)/3.);
@@ -829,12 +830,12 @@ int main(int argc, char** argv)
         fitFunc2 -> SetParameter(6,fitFunc->GetParameter(0)/3.);
         //fitFunc2 -> FixParameter(7,fitFunc->GetParameter(1)+360.);
 	fitFunc2 -> FixParameter(7,fitFunc->GetParameter(1)+350.);
-        fitFunc2 -> SetParameter(8,fitFunc->GetParameter(2));
-        histo -> Fit(fitFunc2,"QNRSL+");
+        fitFunc2 -> SetParameter(8,fitFunc->GetParameter(2));*/
+        histo -> Fit(fitFunc,"QNRSL+");
         
-        fitFunc2 -> SetLineColor(kBlue+1);
-        fitFunc2 -> SetLineWidth(3);
-        fitFunc2 -> Draw("same");
+        fitFunc -> SetLineColor(kBlue+1);
+        fitFunc -> SetLineWidth(3);
+        fitFunc -> Draw("same");
         
         // t_tRes    = fitFunc -> GetParameter(2);
         // t_tResErr = fitFunc -> GetParError(2);
@@ -850,12 +851,89 @@ int main(int argc, char** argv)
         
         histo -> GetXaxis() -> SetRangeUser(mean-5.*sigma,mean+5.*sigma);
         
-        latex = new TLatex(0.55,0.85,Form("#splitline{#sigma_{corr.}^{eff} = %.0f ps}{#sigma_{corr.}^{gaus} = %.0f ps}",effSigma,fitFunc2->GetParameter(2)));
+        latex = new TLatex(0.55,0.85,Form("#splitline{#sigma_{corr.}^{eff} = %.0f ps}{#sigma_{corr.}^{gaus} = %.0f ps}",effSigma,fitFunc->GetParameter(2)));
         latex -> SetNDC();
         latex -> SetTextFont(42);
         latex -> SetTextSize(0.04);
         latex -> SetTextColor(kBlue);
         latex -> Draw("same");
+	      
+	//----- modification for angle vs tRes plots ---- create an output root file ----                                                                                                                   
+
+                                                                                                                                                                                        
+        std::string runs = opts.GetOpt<std::string>("Input.runs");
+        TString angle;
+
+        TFile* MyFile = new TFile("fitfuncs_deltaT_allAngles.root","UPDATE");
+
+        if ( runs == "25871-25930")
+          {
+            MyFile->cd();
+            angle = "0deg";
+            f = (TF1*)fitFunc->Clone();
+            f -> SetName(Form("f1_deltaT_energyCorr_%s_0deg",label12.c_str()));
+            f->Write("",TObject::kOverwrite);
+          }
+        if ( runs == "26411-26513")
+          {
+            MyFile->cd();
+            angle = "10deg";
+            f = (TF1*)fitFunc->Clone();
+            f -> SetName(Form("f1_deltaT_energyCorr_%s_10deg",label12.c_str()));
+            f->Write("",TObject::kOverwrite);
+          }
+        if ( runs == "26115-26177")
+          {
+            MyFile->cd();
+            angle = "20deg";
+            f = (TF1*)fitFunc->Clone();
+            f -> SetName(Form("f1_deltaT_energyCorr_%s_20deg",label12.c_str()));
+            f->Write("",TObject::kOverwrite);
+          }
+        if ( runs == "26325-26394")
+          {
+            MyFile->cd();
+            angle = "30deg";
+            f = (TF1*)fitFunc->Clone();
+            f -> SetName(Form("f1_deltaT_energyCorr_%s_30deg",label12.c_str()));
+            f->Write("",TObject::kOverwrite);
+          }
+	      if ( runs == "26026-26075")
+          {
+            MyFile->cd();
+            angle = "40deg";
+            f = (TF1*)fitFunc->Clone();
+            f -> SetName(Form("f1_deltaT_energyCorr_%s_40deg",label12.c_str()));
+            f->Write("",TObject::kOverwrite);
+          }
+        if ( runs == "26229-26315")
+          {
+            MyFile->cd();
+            angle = "60deg";
+            f = (TF1*)fitFunc->Clone();
+            f -> SetName(Form("f1_deltaT_energyCorr_%s_60deg",label12.c_str()));
+            f->Write("",TObject::kOverwrite);
+          }
+        if ( runs == "26515-26660")
+          {
+            MyFile->cd();
+            angle = "70deg";
+            f = (TF1*)fitFunc->Clone();
+            f -> SetName(Form("f1_deltaT_energyCorr_%s_70deg",label12.c_str()));
+            f->Write("",TObject::kOverwrite);
+          }
+        if ( runs == "25949-26025")
+          {
+            MyFile->cd();
+            angle = "80deg";
+            f = (TF1*)fitFunc->Clone();
+	    f -> SetName(Form("f1_deltaT_energyCorr_%s_80deg",label12.c_str()));
+            f->Write("",TObject::kOverwrite);
+          }
+
+        MyFile->Close();
+
+
         
         std::string label_vs_th(Form("%s-%s_%s",ch1.c_str(),ch2.c_str(),VovLabel.c_str()));
         if( g_tRes_effSigma_vs_th[label_vs_th] == NULL )
@@ -998,8 +1076,8 @@ int main(int argc, char** argv)
         histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-fitFunc->GetParameter(2),fitFunc->GetParameter(1)+fitFunc->GetParameter(2));
         histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-2.*fitFunc->GetParameter(2),fitFunc->GetParameter(1)+2.*fitFunc->GetParameter(2));
         histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-1.5*fitFunc->GetParameter(2),fitFunc->GetParameter(1)+1.5*fitFunc->GetParameter(2));
-        fitFunc2 = new TF1(Form("fitFunc2_energyCorr_%s",label12.c_str()),"gaus(0)+gaus(3)+gaus(6)",fitXMin2,fitXMax2);
-        fitFunc2 -> SetParameter(0,fitFunc->GetParameter(0));
+        fitFunc2 = new TF1(Form("fitFunc2_energyCorr_%s",label12.c_str()),"gaus",fitXMin2,fitXMax2);
+        /*fitFunc2 -> SetParameter(0,fitFunc->GetParameter(0));
         fitFunc2 -> SetParameter(1,fitFunc->GetParameter(1));
         fitFunc2 -> SetParameter(2,fitFunc->GetParameter(2));
         fitFunc2 -> SetParameter(3,fitFunc->GetParameter(0)/3.);
@@ -1007,12 +1085,12 @@ int main(int argc, char** argv)
         fitFunc2 -> SetParameter(5,fitFunc->GetParameter(2));
         fitFunc2 -> SetParameter(6,fitFunc->GetParameter(0)/3.);
         fitFunc2 -> FixParameter(7,fitFunc->GetParameter(1)+350.);
-        fitFunc2 -> SetParameter(8,fitFunc->GetParameter(2));
-        histo -> Fit(fitFunc2,"QNRSL+");
+        fitFunc2 -> SetParameter(8,fitFunc->GetParameter(2));*/
+        histo -> Fit(fitFunc,"QNRSL+");
         
-        fitFunc2 -> SetLineColor(kRed+1);
-        fitFunc2 -> SetLineWidth(3);
-        fitFunc2 -> Draw("same");
+        fitFunc -> SetLineColor(kRed+1);
+        fitFunc -> SetLineWidth(3);
+        fitFunc -> Draw("same");
         
         FindSmallestInterval(vals,histo,0.68);
         mean = vals[0];
@@ -1024,12 +1102,23 @@ int main(int argc, char** argv)
         
         histo -> GetXaxis() -> SetRangeUser(mean-5.*sigma,mean+5.*sigma);
         
-        latex = new TLatex(0.20,0.85,Form("#splitline{#sigma_{raw}^{eff} = %.0f ps}{#sigma_{raw}^{gaus} = %.0f ps}",effSigma,fitFunc2->GetParameter(2)));
+        latex = new TLatex(0.20,0.85,Form("#splitline{#sigma_{raw}^{eff} = %.0f ps}{#sigma_{raw}^{gaus} = %.0f ps}",effSigma,fitFunc->GetParameter(2)));
         latex -> SetNDC();
         latex -> SetTextFont(42);
         latex -> SetTextSize(0.04);
         latex -> SetTextColor(kRed);
         latex -> Draw("same");
+	      
+	//---------------------------------------------------------                                                                                                                                         
+
+        TFile* file = new TFile("fitfuncs_deltaT_allAngles.root","UPDATE");
+        //MyFile->cd();                                                                                                                                                                                     
+        f = (TF1*)fitFunc->Clone();
+        f -> SetName(Form("f1_deltaT_raw_%s_"+angle,label12.c_str()));
+        f->Write("",TObject::kOverwrite);
+        file->Close();
+
+        //----------------------------------------------------------           
         
         g_tRes_effSigma_vs_th[label_vs_th] -> SetPoint(g_tRes_effSigma_vs_th[label_vs_th]->GetN(),th,effSigma*corr);
         g_tRes_effSigma_vs_th[label_vs_th] -> SetPointError(g_tRes_effSigma_vs_th[label_vs_th]->GetN()-1,0.,5.);
