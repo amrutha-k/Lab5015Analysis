@@ -831,7 +831,7 @@ int main(int argc, char** argv)
         //fitFunc2 -> FixParameter(7,fitFunc->GetParameter(1)+360.);
 	fitFunc2 -> FixParameter(7,fitFunc->GetParameter(1)+350.);
         fitFunc2 -> SetParameter(8,fitFunc->GetParameter(2));*/
-        histo -> Fit(fitFunc,"QNRSL+");
+        //histo -> Fit(fitFunc,"QNRSL+");
         
         fitFunc -> SetLineColor(kBlue+1);
         fitFunc -> SetLineWidth(3);
@@ -1086,7 +1086,7 @@ int main(int argc, char** argv)
         fitFunc2 -> SetParameter(6,fitFunc->GetParameter(0)/3.);
         fitFunc2 -> FixParameter(7,fitFunc->GetParameter(1)+350.);
         fitFunc2 -> SetParameter(8,fitFunc->GetParameter(2));*/
-        histo -> Fit(fitFunc,"QNRSL+");
+        //histo -> Fit(fitFunc,"QNRSL+");
         
         fitFunc -> SetLineColor(kRed+1);
         fitFunc -> SetLineWidth(3);
