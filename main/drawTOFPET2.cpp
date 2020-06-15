@@ -63,14 +63,15 @@ int main(int argc, char** argv)
   system(Form("mkdir -p %s/energyRatio/",plotDir.c_str()));
   system(Form("mkdir -p %s/CTR/",plotDir.c_str()));
   system(Form("mkdir -p %s/CTR_energyCorr/",plotDir.c_str()));
-  system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s",plotDir.c_str()));
+  system(Form("mkdir -p %s/deltaT_vs_Xposition/",plotDir.c_str()));
+  /*system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s",plotDir.c_str()));
   system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s/qfine/",plotDir.c_str()));
   system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s/tot/",plotDir.c_str()));
   system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s/totRatio/",plotDir.c_str()));
   system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s/energy/",plotDir.c_str()));
   system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s/energyRatio/",plotDir.c_str()));
   system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s/CTR/",plotDir.c_str()));
-  system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s/CTR_energyCorr/",plotDir.c_str()));  
+  system(Form("cp /afs/cern.ch/user/m/malberti/www/index.php %s/CTR_energyCorr/",plotDir.c_str()));*/  
  
 
   //--- open files
@@ -173,6 +174,7 @@ int main(int argc, char** argv)
   float* vals = new float[6];
   TLatex* latex;
   TH1F* histo;
+  TH1F* histo1;
   TH2F* histo2;
   TProfile* prof;
   TLegend* legend;
@@ -185,6 +187,7 @@ int main(int argc, char** argv)
   TF1 *fLandau1;
   TF1 *fLandau2;
   TF1 *f;
+  TF1 *f1;
   float norm;
 
   
@@ -724,6 +727,21 @@ int main(int argc, char** argv)
         c -> Print(Form("%s/CTR/c_deltaT_vs_energyRatio__%s.png",plotDir.c_str(),label12.c_str()));
         c -> Print(Form("%s/CTR/c_deltaT_vs_energyRatio__%s.pdf",plotDir.c_str(),label12.c_str()));
         delete c;
+	      
+	 //-------------deltaT_vs_xIntercept-----------------------                                                                                                                                          
+
+        cc = new TCanvas(Form("c_deltaT_vs_Xposition_%s",label12.c_str()),Form("c_deltaT_vs_Xposition_%s",label12.c_str()));
+        histo = (TH1F*)( inFile->Get(Form("h1_xIntercept_%s",label12.c_str())) );
+        prof = (TProfile*)( inFile->Get(Form("p1_deltaT_vs_xIntercept_%s",label12.c_str())) );
+        prof -> SetTitle(Form(";xIntercept [mm];#Deltat [ps]"));
+        prof -> GetXaxis() -> SetRangeUser(histo->GetMean()-2.*histo->GetRMS(),
+                                           histo->GetMean()+2.*histo->GetRMS());
+        prof -> Draw("");
+
+        cc -> Print(Form("%s/deltaT_vs_Xposition/c_deltaT_vs_xIntercept__%s.png",plotDir.c_str(),label12.c_str()));
+        cc -> Print(Form("%s/deltaT_vs_Xposition/c_deltaT_vs_xIntercept__%s.pdf",plotDir.c_str(),label12.c_str()));
+        delete cc;
+
       }
     }
   }
@@ -815,7 +833,7 @@ int main(int argc, char** argv)
         fitFunc -> SetParameters(1,histo->GetMean(),histo->GetRMS());
         histo -> Fit(fitFunc,"QNRSL+","");
         histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-fitFunc->GetParameter(2),fitFunc->GetParameter(1)+fitFunc->GetParameter(2));
-        histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-2.*fitFunc->GetParameter(2),fitFunc->GetParameter(1)+2.*fitFunc->GetParameter(2));
+        //histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-2.*fitFunc->GetParameter(2),fitFunc->GetParameter(1)+2.*fitFunc->GetParameter(2));
         histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-1.5*fitFunc->GetParameter(2),fitFunc->GetParameter(1)+1.5*fitFunc->GetParameter(2));
         float fitXMin2 = CTRMeans[label12] - 5.*CTRSigmas[label12];
         float fitXMax2 = CTRMeans[label12] + 5.*CTRSigmas[label12];
@@ -1074,7 +1092,7 @@ int main(int argc, char** argv)
         fitFunc -> SetParameters(1,histo->GetMean(),histo->GetRMS());
         histo -> Fit(fitFunc,"QNRSL+","");
         histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-fitFunc->GetParameter(2),fitFunc->GetParameter(1)+fitFunc->GetParameter(2));
-        histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-2.*fitFunc->GetParameter(2),fitFunc->GetParameter(1)+2.*fitFunc->GetParameter(2));
+        //histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-2.*fitFunc->GetParameter(2),fitFunc->GetParameter(1)+2.*fitFunc->GetParameter(2));
         histo -> Fit(fitFunc,"QNRSL+","",fitFunc->GetParameter(1)-1.5*fitFunc->GetParameter(2),fitFunc->GetParameter(1)+1.5*fitFunc->GetParameter(2));
         fitFunc2 = new TF1(Form("fitFunc2_energyCorr_%s",label12.c_str()),"gaus",fitXMin2,fitXMax2);
         /*fitFunc2 -> SetParameter(0,fitFunc->GetParameter(0));
@@ -1120,7 +1138,46 @@ int main(int argc, char** argv)
 
         //----------------------------------------------------------           
         
-        g_tRes_effSigma_vs_th[label_vs_th] -> SetPoint(g_tRes_effSigma_vs_th[label_vs_th]->GetN(),th,effSigma*corr);
+	// ------ energy-postion corr delta T ----------------------
+	histo1 = (TH1F*)( inFile->Get(Form("h1_deltaT_energyXposCorr_%s",label12.c_str())) );
+        histo1 -> SetLineWidth(2);
+        histo1 -> SetLineColor(kMagenta);
+        histo1 -> SetMarkerColor(kMagenta);
+        histo1 -> Rebin(2);
+        histo1 -> Draw("same");
+	      
+	TF1* fitFunc1 = new TF1(Form("fitFunc1_%s",label12.c_str()),"gaus",fitXMin,fitXMax);
+        fitFunc1 -> SetParameters(1,histo1->GetMean(),histo1->GetRMS());
+        histo1 -> Fit(fitFunc1,"QNRSL+","");
+        histo1 -> Fit(fitFunc1,"QNRSL+","",fitFunc1->GetParameter(1)-fitFunc1->GetParameter(2),fitFunc1->GetParameter(1)+fitFunc1->GetParameter(2));
+        //histo1 -> Fit(fitFunc1,"QNRSL+","",fitFunc1->GetParameter(1)-2.*fitFunc1->GetParameter(2),fitFunc1->GetParameter(1)+2.*fitFunc1->GetParameter(2));                                                
+        histo1 -> Fit(fitFunc1,"QNRSL+","",fitFunc1->GetParameter(1)-1.5*fitFunc1->GetParameter(2),fitFunc1->GetParameter(1)+1.5*fitFunc1->GetParameter(2));
+
+	fitFunc1 -> SetLineColor(kMagenta+1);
+        fitFunc1 -> SetLineWidth(3);
+        fitFunc1 -> Draw("same");        
+	                                                                                                                                                 
+	latex = new TLatex(0.55,0.79,Form("#sigma_{E-pos_corr} = %.0f ps",fitFunc1->GetParameter(2)));
+        latex -> SetNDC();
+        latex -> SetTextFont(42);
+        latex -> SetTextSize(0.04);
+        latex -> SetTextColor(kMagenta);
+        latex -> Draw("same");
+
+	//---------------------------------------------------------                                                                                                                                        \
+                                                                                                                                                                                                           
+        TFile* file1 = new TFile("fitfuncs_deltaT_allAngles.root","UPDATE");
+        //MyFile->cd();                                                                                                                                                                                    \
+                                                                                                                                                                                                            
+        f1 = (TF1*)fitFunc1->Clone();
+        f1 -> SetName(Form("f1_deltaT_energyPositionCorr_%s_"+angle,label12.c_str()));
+        f1->Write("",TObject::kOverwrite);
+        file1->Close();
+
+        //----------------------------------------------------------                                                                                                                                        
+
+
+	g_tRes_effSigma_vs_th[label_vs_th] -> SetPoint(g_tRes_effSigma_vs_th[label_vs_th]->GetN(),th,effSigma*corr);
         g_tRes_effSigma_vs_th[label_vs_th] -> SetPointError(g_tRes_effSigma_vs_th[label_vs_th]->GetN()-1,0.,5.);
         g_tRes_gaus_vs_th[label_vs_th] -> SetPoint(g_tRes_gaus_vs_th[label_vs_th]->GetN(),th,fitFunc2->GetParameter(2)*corr);
         g_tRes_gaus_vs_th[label_vs_th] -> SetPointError(g_tRes_gaus_vs_th[label_vs_th]->GetN()-1,0.,fitFunc2->GetParError(2)*corr);
