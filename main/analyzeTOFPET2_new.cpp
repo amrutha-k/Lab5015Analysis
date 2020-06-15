@@ -54,6 +54,7 @@ struct Event
   float energy2;
   float energy2L;
   float energy2R;
+  float xIntercept;
   long long time1;
   long long time2;
 };
@@ -174,6 +175,7 @@ int main(int argc, char** argv)
   float energy[256];
   long long time[256];
   float xIntercept;
+  float yIntercept;
   int ntracks;
   tree -> SetBranchStatus("*",0);
   tree -> SetBranchStatus("step1",       1); tree -> SetBranchAddress("step1",       &step1);
@@ -184,6 +186,7 @@ int main(int argc, char** argv)
   tree -> SetBranchStatus("energy",      1); tree -> SetBranchAddress("energy",       energy);
   tree -> SetBranchStatus("time",        1); tree -> SetBranchAddress("time",         time);
   tree -> SetBranchStatus("xIntercept",  1); tree -> SetBranchAddress("xIntercept",  &xIntercept);
+  tree -> SetBranchStatus("yIntercept",  1); tree -> SetBranchAddress("yIntercept",  &yIntercept);
   tree -> SetBranchStatus("ntracks",     1); tree -> SetBranchAddress("ntracks",     &ntracks);
   
   
@@ -237,12 +240,16 @@ int main(int argc, char** argv)
   std::map<std::string,TH1F*> h1_energy_cut;
   std::map<std::string,TH2F*> h2_energy_corr;
   std::map<std::string,TH1F*> h1_energyRatio;
+	
+  std::map<std::string,TH1F*> h1_xIntercept;
   
   std::map<std::string,TH1F*> h1_deltaT_raw;
   std::map<std::string,TH1F*> h1_deltaT;
   std::map<std::string,TProfile*> p1_deltaT_vs_energyRatio;
+  std::map<std::string,TProfile*> p1_deltaT_vs_xIntercept;
 
   std::map<std::string,TH1F*> h1_deltaT_energyCorr;  
+  std::map<std::string,TH1F*> h1_deltaT_energyXposCorr;
   
   
   
@@ -260,6 +267,7 @@ int main(int argc, char** argv)
     
     // selection on track position
     if (xIntercept < cut_Xmin || xIntercept > cut_Xmax) continue;
+    if (yIntercept < 0 || yIntercept > 3) continue;
 
 
     float vth1 = float(int(step2/10000)-1);;
@@ -306,11 +314,13 @@ int main(int argc, char** argv)
         
         h2_energy_corr[label12] = new TH2F(Form("h2_energy_corr_%s",label12.c_str()),"",200,0.,50.,200,0.,50.);
         h1_energyRatio[label12] = new TH1F(Form("h1_energyRatio_%s",label12.c_str()),"",1000,0.,5.);
+	h1_xIntercept[label12] = new TH1F(Form("h1_xIntercept_%s",label12.c_str()),"",1000,0.,50.);
         
         h1_deltaT_raw[label12] = new TH1F(Form("h1_deltaT_raw_%s",label12.c_str()),"",1250,-5000.,5000.);
         h1_deltaT[label12] = new TH1F(Form("h1_deltaT_%s",label12.c_str()),"",1250,-5000,5000.);
         
         h1_deltaT_energyCorr[label12] = new TH1F(Form("h1_deltaT_energyCorr_%s",label12.c_str()),"",1250,-5000.,5000.);
+        h1_deltaT_energyXposCorr[label12] = new TH1F(Form("h1_deltaT_energyXposCorr_%s",label12.c_str()),"",1250,-5000.,5000.);
       }
     }
     
@@ -468,6 +478,7 @@ int main(int argc, char** argv)
       anEvent.energy2R = energy2R;
       anEvent.time1 = time1;
       anEvent.time2 = time2;
+      anEvent.xIntercept = xIntercept;
       events[label12].push_back(anEvent);
     }
   }
@@ -584,6 +595,9 @@ int main(int argc, char** argv)
       h1_energyRatio[anEvent.label12] -> Fill( anEvent.energy2 / anEvent.energy1 );
       
       h1_deltaT_raw[anEvent.label12] -> Fill( anEvent.time2-anEvent.time1 );
+	 
+      if (anEvent.xIntercept < cut_Xmin || anEvent.xIntercept > cut_Xmax) continue;
+      h1_xIntercept[anEvent.label12] -> Fill(anEvent.xIntercept);
       
       
       Event anEvent2;
@@ -615,6 +629,7 @@ int main(int argc, char** argv)
       anEvent2.energy2R = anEvent.energy2R;
       anEvent2.time1 = anEvent.time1;
       anEvent2.time2 = anEvent.time2;
+      anEvent2.xIntercept = anEvent.xIntercept;
       events2[anEvent.label12].push_back(anEvent2);
     }
     std::cout << std::endl;
@@ -682,10 +697,18 @@ int main(int argc, char** argv)
         float xMax = h1_energyRatio[anEvent.label12]->GetMean() + 3.*h1_energyRatio[anEvent.label12]->GetRMS();
         p1_deltaT_vs_energyRatio[anEvent.label12] =  new TProfile(Form("p1_deltaT_vs_energyRatio_%s",anEvent.label12.c_str()),"",100,xMin,xMax);
       }
+	    
+      if( !p1_deltaT_vs_xIntercept[anEvent.label12] )
+        {
+          float xMin1 = h1_xIntercept[anEvent.label12]->GetMean() - 2.*h1_xIntercept[anEvent.label12]->GetRMS();
+          float xMax1 = h1_xIntercept[anEvent.label12]->GetMean() + 2.*h1_xIntercept[anEvent.label12]->GetRMS();
+          p1_deltaT_vs_xIntercept[anEvent.label12] =  new TProfile(Form("p1_deltaT_vs_xIntercept_%s",anEvent.label12.c_str()),"",100,xMin1,xMax1);
+        }
       
       if( ( deltaT > timeLow ) &&
           ( deltaT < timeHig ) )
-        p1_deltaT_vs_energyRatio[anEvent.label12] -> Fill( anEvent.energy2/anEvent.energy1,anEvent.time2-anEvent.time1 );    
+        p1_deltaT_vs_energyRatio[anEvent.label12] -> Fill( anEvent.energy2/anEvent.energy1,anEvent.time2-anEvent.time1 ); 
+        p1_deltaT_vs_xIntercept[anEvent.label12] -> Fill( anEvent.xIntercept,anEvent.time2-anEvent.time1 );
     }
     std::cout << std::endl;
   }
@@ -694,6 +717,7 @@ int main(int argc, char** argv)
   
   
   std::map<std::string,TF1*> fitFunc_energyCorr;
+  std::map<std::string,TF1*> fitFunc_xPosCorr;
   
   for(auto stepLabel : stepLabels)
   {
@@ -713,7 +737,11 @@ int main(int argc, char** argv)
       float fitXMin = h1_energyRatio[label12]->GetMean() - 2.*h1_energyRatio[label12]->GetRMS();
       float fitXMax = h1_energyRatio[label12]->GetMean() + 2.*h1_energyRatio[label12]->GetRMS();
       fitFunc_energyCorr[label12] = new TF1(Form("fitFunc_energyCorr_%s",label12.c_str()),"pol5",fitXMin,fitXMax);
+      float fitXMin1 = h1_xIntercept[label12]->GetMean() - 2.*h1_xIntercept[label12]->GetRMS();
+      float fitXMax1 = h1_xIntercept[label12]->GetMean() + 2.*h1_xIntercept[label12]->GetRMS();
+      fitFunc_xPosCorr[label12] = new TF1(Form("fitFunc_xPosCorr_%s",label12.c_str()),"pol5",fitXMin1,fitXMax1);
       p1_deltaT_vs_energyRatio[label12] -> Fit(fitFunc_energyCorr[label12],"QRS+");
+      p1_deltaT_vs_xIntercept[label12] -> Fit(fitFunc_xPosCorr[label12],"QRS+");
     }
   }
   
@@ -736,7 +764,11 @@ int main(int argc, char** argv)
       
       float energyCorr = fitFunc_energyCorr[label]->Eval(anEvent.energy2/anEvent.energy1) -
                          fitFunc_energyCorr[label]->Eval(h1_energyRatio[anEvent.label12]->GetMean());
+      float xPosCorr = fitFunc_xPosCorr[label]->Eval(anEvent.xIntercept) -
+        fitFunc_xPosCorr[label]->Eval(h1_xIntercept[anEvent.label12]->GetMean());
+	    
       h1_deltaT_energyCorr[label] -> Fill( deltaT - energyCorr );
+      h1_deltaT_energyXposCorr[label] -> Fill( deltaT - energyCorr - xPosCorr );
     }
     std::cout << std::endl;
   }
