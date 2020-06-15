@@ -175,7 +175,7 @@ int main(int argc, char** argv)
   float energy[256];
   long long time[256];
   float xIntercept;
-  float yIntercept;
+  //float yIntercept;
   int ntracks;
   tree -> SetBranchStatus("*",0);
   tree -> SetBranchStatus("step1",       1); tree -> SetBranchAddress("step1",       &step1);
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
   tree -> SetBranchStatus("energy",      1); tree -> SetBranchAddress("energy",       energy);
   tree -> SetBranchStatus("time",        1); tree -> SetBranchAddress("time",         time);
   tree -> SetBranchStatus("xIntercept",  1); tree -> SetBranchAddress("xIntercept",  &xIntercept);
-  tree -> SetBranchStatus("yIntercept",  1); tree -> SetBranchAddress("yIntercept",  &yIntercept);
+  //tree -> SetBranchStatus("yIntercept",  1); tree -> SetBranchAddress("yIntercept",  &yIntercept);
   tree -> SetBranchStatus("ntracks",     1); tree -> SetBranchAddress("ntracks",     &ntracks);
   
   
@@ -267,7 +267,7 @@ int main(int argc, char** argv)
     
     // selection on track position
     if (xIntercept < cut_Xmin || xIntercept > cut_Xmax) continue;
-    if (yIntercept < 0 || yIntercept > 3) continue;
+    //if (yIntercept < 0 || yIntercept > 3) continue;
 
 
     float vth1 = float(int(step2/10000)-1);;
