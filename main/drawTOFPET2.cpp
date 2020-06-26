@@ -734,8 +734,8 @@ int main(int argc, char** argv)
         histo = (TH1F*)( inFile->Get(Form("h1_xIntercept_%s",label12.c_str())) );
         prof = (TProfile*)( inFile->Get(Form("p1_deltaT_vs_xIntercept_%s",label12.c_str())) );
         prof -> SetTitle(Form(";xIntercept [mm];#Deltat [ps]"));
-        prof -> GetXaxis() -> SetRangeUser(histo->GetMean()-2.*histo->GetRMS(),
-                                           histo->GetMean()+2.*histo->GetRMS());
+        prof -> GetXaxis() -> SetRangeUser(histo->GetMean()-3.*histo->GetRMS(),
+                                           histo->GetMean()+3.*histo->GetRMS());
         prof -> Draw("");
 
         cc -> Print(Form("%s/deltaT_vs_Xposition/c_deltaT_vs_xIntercept__%s.png",plotDir.c_str(),label12.c_str()));
