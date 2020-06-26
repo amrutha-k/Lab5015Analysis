@@ -194,17 +194,12 @@ void tRes_vs_angle()
 	    {
 	      g_tRes_raw_bestTh_vs_angle[label] -> SetPoint(g_tRes_raw_bestTh_vs_angle[label]->GetN(),mapIt.first,tRes_raw_bestTh[label][mapIt.first]);
 	      g_tRes_raw_bestTh_vs_angle[label] -> SetPointError(g_tRes_raw_bestTh_vs_angle[label]->GetN()-1,angleErr[mapIt.first],tResErr_raw_bestTh[label][mapIt.first]);
-	      //std::cout<<"raw:"<<label<<"\t"<<angleErr[mapIt.first]<<"\t"<<tResErr_raw_bestTh[label][mapIt.first]<<"\n";
-	      //	      std::cout<<g_tRes_raw_bestTh_vs_angle[label]->GetErrorX(2)<<"\n";
-	      //	       std::cout<<g_tRes_raw_bestTh_vs_angle[label]->GetErrorX(3)<<"\n";
-	      //std::cout<<g_tRes_raw_bestTh_vs_angle[label]->GetErrorX(4)<<"\n";
 
 	      g_tRes_energyCorr_bestTh_vs_angle[label] -> SetPoint(g_tRes_energyCorr_bestTh_vs_angle[label]->GetN(),mapIt.first,tRes_energyCorr_bestTh[label][mapIt.first]);
 	      g_tRes_energyCorr_bestTh_vs_angle[label] -> SetPointError(g_tRes_energyCorr_bestTh_vs_angle[label]->GetN()-1,angleErr[mapIt.first],tResErr_energyCorr_bestTh[label][mapIt.first]);
-	      //	      std::cout<<"energyCorr:"<<label<<"\t"<<angleErr[mapIt.first]<<"\t"<<tResErr_energyCorr_bestTh[label][mapIt.first]<<"\n";
+
 	      g_tRes_energyPosCorr_bestTh_vs_angle[label] -> SetPoint(g_tRes_energyPosCorr_bestTh_vs_angle[label]->GetN(),mapIt.first,tRes_energyPosCorr_bestTh[label][mapIt.first]);
 	      g_tRes_energyPosCorr_bestTh_vs_angle[label] -> SetPointError(g_tRes_energyPosCorr_bestTh_vs_angle[label]->GetN()-1,angleErr[mapIt.first],tResErr_energyPosCorr_bestTh[label][mapIt.first]);
-	      // std::cout<<"energyPosCorr:"<<label<<"\t"<<angleErr[mapIt.first]<<"\t"<<tResErr_energyPosCorr_bestTh[label][mapIt.first]<<"\n";
 	    }
 	}
     }
