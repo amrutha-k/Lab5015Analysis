@@ -175,7 +175,7 @@ int main(int argc, char** argv)
   float energy[256];
   long long time[256];
   float xIntercept;
-  //float yIntercept;
+  float yIntercept;
   int ntracks;
   tree -> SetBranchStatus("*",0);
   tree -> SetBranchStatus("step1",       1); tree -> SetBranchAddress("step1",       &step1);
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
   tree -> SetBranchStatus("energy",      1); tree -> SetBranchAddress("energy",       energy);
   tree -> SetBranchStatus("time",        1); tree -> SetBranchAddress("time",         time);
   tree -> SetBranchStatus("xIntercept",  1); tree -> SetBranchAddress("xIntercept",  &xIntercept);
-  //tree -> SetBranchStatus("yIntercept",  1); tree -> SetBranchAddress("yIntercept",  &yIntercept);
+  tree -> SetBranchStatus("yIntercept",  1); tree -> SetBranchAddress("yIntercept",  &yIntercept);
   tree -> SetBranchStatus("ntracks",     1); tree -> SetBranchAddress("ntracks",     &ntracks);
   
   
@@ -266,8 +266,8 @@ int main(int argc, char** argv)
     if( entry%10000 == 0 ) std::cout << ">>> 1st loop: reading entry " << entry << " / " << nEntries << " (" << 100.*entry/nEntries << "%)" << "\r" << std::flush;
     
     // selection on track position
-    if (xIntercept < cut_Xmin || xIntercept > cut_Xmax) continue;
-    //if (yIntercept < 0 || yIntercept > 3) continue;
+    if (xIntercept < 11 || xIntercept > 21) continue;
+    if (yIntercept < 18 || yIntercept > 22) continue;
 
 
     float vth1 = float(int(step2/10000)-1);;
@@ -698,17 +698,17 @@ int main(int argc, char** argv)
         p1_deltaT_vs_energyRatio[anEvent.label12] =  new TProfile(Form("p1_deltaT_vs_energyRatio_%s",anEvent.label12.c_str()),"",100,xMin,xMax);
       }
 	    
-      if( !p1_deltaT_vs_xIntercept[anEvent.label12] )
+      /*if( !p1_deltaT_vs_xIntercept[anEvent.label12] )
         {
           float xMin1 = h1_xIntercept[anEvent.label12]->GetMean() - 2.*h1_xIntercept[anEvent.label12]->GetRMS();
           float xMax1 = h1_xIntercept[anEvent.label12]->GetMean() + 2.*h1_xIntercept[anEvent.label12]->GetRMS();
           p1_deltaT_vs_xIntercept[anEvent.label12] =  new TProfile(Form("p1_deltaT_vs_xIntercept_%s",anEvent.label12.c_str()),"",100,xMin1,xMax1);
-        }
+        }*/
       
       if( ( deltaT > timeLow ) &&
           ( deltaT < timeHig ) )
         p1_deltaT_vs_energyRatio[anEvent.label12] -> Fill( anEvent.energy2/anEvent.energy1,anEvent.time2-anEvent.time1 ); 
-        p1_deltaT_vs_xIntercept[anEvent.label12] -> Fill( anEvent.xIntercept,anEvent.time2-anEvent.time1 );
+        //p1_deltaT_vs_xIntercept[anEvent.label12] -> Fill( anEvent.xIntercept,anEvent.time2-anEvent.time1 );
     }
     std::cout << std::endl;
   }
@@ -737,11 +737,11 @@ int main(int argc, char** argv)
       float fitXMin = h1_energyRatio[label12]->GetMean() - 2.*h1_energyRatio[label12]->GetRMS();
       float fitXMax = h1_energyRatio[label12]->GetMean() + 2.*h1_energyRatio[label12]->GetRMS();
       fitFunc_energyCorr[label12] = new TF1(Form("fitFunc_energyCorr_%s",label12.c_str()),"pol5",fitXMin,fitXMax);
-      float fitXMin1 = h1_xIntercept[label12]->GetMean() - 2.*h1_xIntercept[label12]->GetRMS();
-      float fitXMax1 = h1_xIntercept[label12]->GetMean() + 2.*h1_xIntercept[label12]->GetRMS();
-      fitFunc_xPosCorr[label12] = new TF1(Form("fitFunc_xPosCorr_%s",label12.c_str()),"pol5",fitXMin1,fitXMax1);
+      //float fitXMin1 = h1_xIntercept[label12]->GetMean() - 2.*h1_xIntercept[label12]->GetRMS();
+      //float fitXMax1 = h1_xIntercept[label12]->GetMean() + 2.*h1_xIntercept[label12]->GetRMS();
+      //fitFunc_xPosCorr[label12] = new TF1(Form("fitFunc_xPosCorr_%s",label12.c_str()),"pol5",fitXMin1,fitXMax1);
       p1_deltaT_vs_energyRatio[label12] -> Fit(fitFunc_energyCorr[label12],"QRS+");
-      p1_deltaT_vs_xIntercept[label12] -> Fit(fitFunc_xPosCorr[label12],"QRS+");
+      //p1_deltaT_vs_xIntercept[label12] -> Fit(fitFunc_xPosCorr[label12],"QRS+");
     }
   }
   
@@ -760,21 +760,79 @@ int main(int argc, char** argv)
       if( entry%1000 == 0 ) std::cout << ">>> 4th loop (" << label << "): reading entry " << entry << " / " << nEntries << "\r" << std::flush;
       Event anEvent = mapIt.second.at(entry);
       
+      float timeLow = h1_deltaT[anEvent.label12]->GetMean() - 5*h1_deltaT[anEvent.label12]->GetRMS();
+      float timeHig = h1_deltaT[anEvent.label12]->GetMean() + 5*h1_deltaT[anEvent.label12]->GetRMS();
+	    
       long long deltaT = anEvent.time2-anEvent.time1;
       
       float energyCorr = fitFunc_energyCorr[label]->Eval(anEvent.energy2/anEvent.energy1) -
                          fitFunc_energyCorr[label]->Eval(h1_energyRatio[anEvent.label12]->GetMean());
-      float xPosCorr = fitFunc_xPosCorr[label]->Eval(anEvent.xIntercept) -
-        fitFunc_xPosCorr[label]->Eval(h1_xIntercept[anEvent.label12]->GetMean());
 	    
       h1_deltaT_energyCorr[label] -> Fill( deltaT - energyCorr );
-      h1_deltaT_energyXposCorr[label] -> Fill( deltaT - energyCorr - xPosCorr );
+	    
+      if( !p1_deltaT_vs_xIntercept[anEvent.label12] )
+        {
+          float xMin1 = h1_xIntercept[anEvent.label12]->GetMean() - 3.*h1_xIntercept[anEvent.label12]->GetRMS();
+          float xMax1 = h1_xIntercept[anEvent.label12]->GetMean() + 3.*h1_xIntercept[anEvent.label12]->GetRMS();
+          p1_deltaT_vs_xIntercept[anEvent.label12] =  new TProfile(Form("p1_deltaT_vs_xIntercept_%s",anEvent.label12.c_str()),"",100,xMin1,xMax1);
+        }
+      if( ( (deltaT - energyCorr) > timeLow ) &&
+          ( (deltaT - energyCorr) < timeHig ) )
+        {
+          p1_deltaT_vs_xIntercept[anEvent.label12] -> Fill( anEvent.xIntercept,deltaT - energyCorr );
+        }
+
     }
     std::cout << std::endl;
   }
   
-  
-  
+for(auto stepLabel : stepLabels)
+    {
+      float Vov = map_Vovs[stepLabel];
+      float th = map_ths[stepLabel];
+      std::string VovLabel(Form("Vov%.1f",Vov));
+      std::string thLabel(Form("th%02.0f",th));
+
+      for(auto pair : pairsVec)
+        {
+          std::string ch1 = pair.first;
+          std::string ch2 = pair.second;
+          std::string label1(Form("%s_%s",ch1.c_str(),stepLabel.c_str()));
+          std::string label2(Form("%s_%s",ch2.c_str(),stepLabel.c_str()));
+          std::string label12 = Form("%s-%s_%s",ch1.c_str(),ch2.c_str(),stepLabel.c_str());
+
+          float fitXMin1 = h1_xIntercept[label12]->GetMean() - 2.*h1_xIntercept[label12]->GetRMS();
+          float fitXMax1 = h1_xIntercept[label12]->GetMean() + 2.*h1_xIntercept[label12]->GetRMS();
+          fitFunc_xPosCorr[label12] = new TF1(Form("fitFunc_xPositionCorr_%s",label12.c_str()),"pol5",fitXMin1,fitXMax1);
+  	  p1_deltaT_vs_xIntercept[label12] -> Fit(fitFunc_xPosCorr[label12],"QRS+");
+        }
+     }
+
+//--- 5th loop over events                                                                                                                                                                                
+  for(auto mapIt : events2)
+    {
+      std::string label = mapIt.first;
+
+      nEntries = mapIt.second.size();
+      for(int entry = 0; entry < nEntries; ++entry)
+        {
+          if( entry%1000 == 0 ) std::cout << ">>> 5th loop (" << label << "): reading entry " << entry << " / " << nEntries << "\r" << std::flush;
+          Event anEvent = mapIt.second.at(entry);
+
+          long long deltaT = anEvent.time2-anEvent.time1;
+          float energyCorr = fitFunc_energyCorr[label]->Eval(anEvent.energy2/anEvent.energy1) -
+            fitFunc_energyCorr[label]->Eval(h1_energyRatio[anEvent.label12]->GetMean());
+
+          float energyxPosCorr = fitFunc_xPosCorr[label]->Eval(anEvent.xIntercept) -
+            fitFunc_xPosCorr[label]->Eval(h1_xIntercept[anEvent.label12]->GetMean());
+
+          //h1_deltaT_energyCorr[label] -> Fill( deltaT - energyCorr );                                                                                                                                     
+          h1_deltaT_energyXposCorr[label] -> Fill( deltaT - energyxPosCorr - energyCorr);
+        }
+      std::cout << std::endl;
+    }
+
+
   
   int bytes = outFile -> Write();
   std::cout << "============================================"  << std::endl;
